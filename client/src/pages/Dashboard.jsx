@@ -543,7 +543,7 @@ export default function Dashboard() {
                           >
                             View Map
                           </button>
-                          <BookButton turfId={turf.place_id} />
+                          <BookButton turfId={turf.place_id} turfData={turf} />
                         </div>
                       </div>
                     </div>

@@ -1,11 +1,14 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function BookButton({ turfId }) {
+export default function BookButton({ turfId, turfData }) {
   const navigate = useNavigate();
 
   const handleBookNow = () => {
-    navigate(`/book/${turfId}`);
+    // Pass full turf data via state so BookingPage can access it
+    navigate(`/book/${turfId}`, { 
+      state: { turf: turfData } 
+    });
   };
 
   return (

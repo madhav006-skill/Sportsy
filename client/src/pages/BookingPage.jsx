@@ -1,20 +1,44 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../lib/api';
 
 export default function BookingPage() {
   const { turfId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [paymentLoading, setPaymentLoading] = useState(false);
 
-  // Dummy turf data (replace with API call later)
+  // Get turf data from route state (passed from Dashboard via BookButton)
+  const turf = location.state?.turf;
+
+  // Fallback if no turf data (direct URL access)
+  if (!turf) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Turf Not Found</h2>
+          <p className="text-slate-400 mb-6">Unable to load turf details. Please select a turf from the dashboard.</p>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg font-semibold hover:shadow-lg hover:shadow-cyan-500/50 transition-all"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Extract dynamic turf data from Google Places API response
   const turfData = {
     id: turfId,
-    name: 'Champions Arena Sports Complex',
-    address: 'Sector 18, Noida, Uttar Pradesh 201301',
-    rating: 4.5,
-    image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&auto=format&fit=crop',
-    openTime: '6:00 AM',
+    name: turf.name || 'Sports Complex',
+    address: turf.vicinity || turf.formatted_address || 'Address not available',
+    rating: turf.rating || 4.0,
+    image: turf.photos?.[0] 
+      ? `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photo_reference=${turf.photos[0].photo_reference}&key=${import.meta.env.VITE_GOOGLE_PLACES_API_KEY}`
+      : 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&auto=format&fit=crop',
+    openTime: turf.opening_hours?.weekday_text?.[5] || '6:00 AM', // Friday hours
     closeTime: '11:00 PM',
     facilities: ['Floodlights', 'Parking', 'Changing Rooms', 'First Aid']
   };
