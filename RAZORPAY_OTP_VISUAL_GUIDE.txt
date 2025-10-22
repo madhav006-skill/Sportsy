@@ -1,0 +1,118 @@
+┌─────────────────────────────────────────────────────────────┐
+│  🔍 RAZORPAY TEST MODE - OTP VERIFICATION EXPLAINED          │
+└─────────────────────────────────────────────────────────────┘
+
+❌ WRONG WAY (What you tried):
+┌────────────────────────────────────────┐
+│  Razorpay OTP Screen                   │
+│                                        │
+│  Enter OTP: [1][2][3][4][5][6]  ← ❌  │
+│                                        │
+│  [Submit]                              │
+└────────────────────────────────────────┘
+Result: "Verification failed because of incorrect OTP"
+
+
+✅ CORRECT WAY (How test mode works):
+┌────────────────────────────────────────┐
+│  Razorpay Test Mode OTP Screen         │
+│                                        │
+│  Enter OTP: [_][_][_][_][_][_]         │
+│                                        │
+│  ┌──────────┐    ┌──────────┐         │
+│  │ Success  │    │ Failure  │         │
+│  └──────────┘    └──────────┘         │
+│      ↑ Click this!                     │
+└────────────────────────────────────────┘
+Result: Payment Successful! 🎉
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 COMPLETE TEST FLOW:
+
+Step 1: Enter Card Details
+   Card Number: 4111 1111 1111 1111
+   Expiry Date: 12/25 (any future date)
+   CVV: 123 (any 3 digits)
+   
+Step 2: Click "Pay Now"
+
+Step 3: When OTP screen appears
+   → DON'T enter digits
+   → Click "Success" button ✅
+   
+Step 4: Done! Payment successful
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🤔 WHY THIS HAPPENS:
+
+Test Mode:
+• No real OTP is sent
+• No real bank connection
+• OTP field is just UI placeholder
+• Success/Failure buttons control outcome
+
+Live Mode (Production):
+• Real OTP sent via SMS
+• Real bank verification
+• Customer enters actual OTP digits
+• No Success/Failure buttons
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 QUICK REFERENCE:
+
+Test Card (Success):  4111 1111 1111 1111
+Test Card (Failure):  Use same card, click "Failure" button
+
+Other Test Cards:
+• International: 4012 0010 3714 1112
+• RuPay: 6074 8291 9945 2495
+• Mastercard: 5267 3181 8797 5449
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📱 SCREENSHOTS GUIDE:
+
+[Payment Card Entry]
+┌─────────────────────────┐
+│ Card Number             │
+│ 4111 1111 1111 1111     │
+│                         │
+│ Expiry    CVV           │
+│ 12/25     123           │
+│                         │
+│ [Pay ₹1,416]           │
+└─────────────────────────┘
+
+          ↓
+
+[OTP Screen - Test Mode]
+┌─────────────────────────┐
+│ Enter OTP               │
+│ □ □ □ □ □ □            │
+│                         │
+│ Test Actions:           │
+│ [Success] [Failure]     │
+│    ↑ Click here!        │
+└─────────────────────────┘
+
+          ↓
+
+[Success!]
+┌─────────────────────────┐
+│ ✅ Payment Successful!   │
+│                         │
+│ Payment ID: pay_xxx     │
+│ Order ID: order_xxx     │
+└─────────────────────────┘
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Need more help? Check RAZORPAY_TEST_MODE_GUIDE.md
