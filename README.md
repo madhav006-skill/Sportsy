@@ -10,7 +10,7 @@ Stack:
 - Optional: Stripe Secret Key, Razorpay Key ID/Secret
 
 ### Quick start (Windows PowerShell)
-
+aman kk
 1) Create `.env` files (manually) and fill values:
 - `server/.env`
 - `client/.env`
