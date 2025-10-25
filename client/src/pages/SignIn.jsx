@@ -18,20 +18,29 @@ export default function SignIn() {
     }
     setLoading(true);
     try {
+      console.log('Attempting signin with:', { email });
       const res = await api.post('/api/auth/signin', { email, password });
+      console.log('Signin response:', res.data);
+      
       if (res.data?.success && res.data?.token) {
         try {
           sessionStorage.setItem('token', res.data.token);
+          console.log('Token stored in sessionStorage');
         } catch {
           // Fallback if sessionStorage not available
           localStorage.setItem('token', res.data.token);
+          console.log('Token stored in localStorage');
         }
         navigate('/dashboard');
       } else {
-        setError(res.data?.message || 'Sign in failed. Please try again.');
+        const errorMsg = res.data?.message || 'Sign in failed. Please try again.';
+        console.error('Signin failed:', errorMsg);
+        setError(errorMsg);
       }
     } catch (err) {
-      setError(err?.response?.data?.message || 'Unable to sign in right now.');
+      console.error('Signin error:', err);
+      const errorMsg = err?.response?.data?.message || err?.message || 'Unable to sign in. Please check your credentials.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -53,8 +62,17 @@ export default function SignIn() {
           </div>
 
           {error && (
-            <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-              {error}
+            <div className="mb-4 rounded-lg border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+              <p className="font-semibold mb-1">⚠️ Sign In Failed</p>
+              <p>{error}</p>
+              {error.includes('Invalid credentials') && (
+                <p className="mt-2 text-xs">
+                  Don't have an account?{' '}
+                  <Link to="/signup" className="text-yellow-400 hover:text-yellow-300 font-bold underline">
+                    Create one here
+                  </Link>
+                </p>
+              )}
             </div>
           )}
 

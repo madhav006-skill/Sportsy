@@ -7,6 +7,7 @@ import SignIn from './pages/SignIn.jsx';
 import SignUp from './pages/SignUp.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import BookingPage from './pages/BookingPage.jsx';
+import Organizer from './pages/Organizer.jsx';
 import { getUserFromToken, isAuthenticated, logout as authLogout } from './lib/auth.js';
 
 function Auth({ mode }) {
@@ -154,6 +155,13 @@ export default function App() {
           <Route path="/signup" element={<SignUp />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/book/:turfId" element={<BookingPage />} />
+          <Route path="/organizer" element={
+            authed ? (
+              <Organizer />
+            ) : (
+              <Navigate to="/signin" replace state={{ from: '/organizer' }} />
+            )
+          } />
         </Routes>
       </main>
     </div>

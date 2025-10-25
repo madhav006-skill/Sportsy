@@ -621,19 +621,24 @@
   
   .hero-description {
     font-size: 1rem;
+    padding: 0 1rem;
   }
   
   .cta-buttons {
     flex-direction: column;
     align-items: stretch;
-    max-width: 300px;
+    max-width: 320px;
     margin: 0 auto;
+    gap: 1rem;
+    padding: 0 1rem;
   }
   
   .readmore-btn,
   .getstarted-btn {
     width: 100%;
-    padding: 0.9rem 2rem;
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    min-height: 50px; /* Better touch target */
   }
   
   .quick-buttons {
@@ -646,6 +651,19 @@
   .quick-btn {
     width: 100%;
     padding: 1.5rem 2rem;
+  }
+}
+
+/* Tablet landscape and small desktops */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .cta-buttons {
+    gap: 1.25rem;
+  }
+  
+  .readmore-btn,
+  .getstarted-btn {
+    padding: 0.95rem 2.25rem;
+    font-size: 1rem;
   }
 }
 
@@ -662,6 +680,29 @@
   .hero-glow {
     width: 400px;
     height: 400px;
+  }
+  
+  .hero-title {
+    font-size: 3rem;
+  }
+  
+  .hero-description {
+    font-size: 0.95rem;
+    padding: 0 0.5rem;
+  }
+  
+  .cta-buttons {
+    gap: 0.875rem;
+    max-width: 280px;
+    padding: 0 0.5rem;
+  }
+  
+  .readmore-btn,
+  .getstarted-btn {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.95rem;
+    min-height: 48px;
+    border-radius: 10px;
   }
   
   .quick-nav-title {

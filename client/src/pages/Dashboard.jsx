@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { getUserFromToken, logout } from '../lib/auth';
 import { api } from '../lib/api';
 import BookButton from '../components/BookButton';
+import ActiveMatches from '../components/ActiveMatches';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -15,17 +16,47 @@ export default function Dashboard() {
   const [loadingTurfs, setLoadingTurfs] = useState(false);
   const [showTurfsModal, setShowTurfsModal] = useState(false);
   const [locationError, setLocationError] = useState('');
-  const [selectedCity, setSelectedCity] = useState('auto');
   const dropdownRef = useRef(null);
 
-  const cities = {
-    'auto': { name: 'Auto-Detect', lat: null, lng: null },
-    'bangalore': { name: 'Bangalore', lat: 12.9716, lng: 77.5946 },
-    'mumbai': { name: 'Mumbai', lat: 19.0760, lng: 72.8777 },
-    'delhi': { name: 'Delhi', lat: 28.6139, lng: 77.2090 },
-    'pune': { name: 'Pune', lat: 18.5204, lng: 73.8567 },
-    'hyderabad': { name: 'Hyderabad', lat: 17.3850, lng: 78.4867 }
-  };
+  // Mock active matches data - in production, fetch from API
+  const [activeMatches] = useState([
+    {
+      id: 'MATCH-1729789234567',
+      sportType: 'football',
+      date: '2025-10-25',
+      time: '18:00',
+      turf: 'Arena Sports Complex, Koramangala',
+      maxPlayers: 12,
+      joinedPlayers: 8,
+      matchType: 'open',
+      costPerPlayer: 150,
+      status: 'active'
+    },
+    {
+      id: 'MATCH-1729789234568',
+      sportType: 'cricket',
+      date: '2025-10-26',
+      time: '16:00',
+      turf: 'Champions Ground, Indiranagar',
+      maxPlayers: 22,
+      joinedPlayers: 15,
+      matchType: 'open',
+      costPerPlayer: 0,
+      status: 'active'
+    },
+    {
+      id: 'MATCH-1729789234569',
+      sportType: 'basketball',
+      date: '2025-10-24',
+      time: '20:00',
+      turf: 'Hoops Arena, Whitefield',
+      maxPlayers: 10,
+      joinedPlayers: 6,
+      matchType: 'invite-only',
+      costPerPlayer: 200,
+      status: 'active'
+    }
+  ]);
 
   const username = user?.name || 'Champion';
   const userId = user?.id || user?.userId || 'USR-' + Math.random().toString(36).substr(2, 9).toUpperCase();
@@ -61,7 +92,7 @@ export default function Dashboard() {
   // Quick action handlers (routes can be wired later as features are implemented)
   const goCreateMatch = () => {
     setShowDropdown(false);
-    navigate('/dashboard?action=create-match');
+    navigate('/organizer');
   };
   const goMyBookings = () => {
     setShowDropdown(false);
@@ -77,87 +108,44 @@ export default function Dashboard() {
   };
 
   const searchNearbyTurfs = async () => {
+    if (!searchQuery.trim()) {
+      setLocationError('Please enter a location to search (e.g., Kolkata, Mumbai, Bangalore)');
+      return;
+    }
+
     setLocationError('');
     setLoadingTurfs(true);
-    
-    // First, check if user typed a city name in search box
-    let cityToSearch = null;
-    if (searchQuery.trim()) {
-      const searchLower = searchQuery.toLowerCase().trim();
-      // Check if search query matches any city name
-      const matchedCity = Object.entries(cities).find(([key, city]) => 
-        city.name.toLowerCase().includes(searchLower) || 
-        searchLower.includes(city.name.toLowerCase()) ||
-        key.toLowerCase() === searchLower
-      );
-      
-      if (matchedCity) {
-        cityToSearch = matchedCity[0]; // Use the city key
-      }
-    }
-    
-    // If city not found in search, check dropdown selection
-    if (!cityToSearch && selectedCity !== 'auto') {
-      cityToSearch = selectedCity;
-    }
-    
-    // If we have a specific city (from search or dropdown), use those coordinates
-    if (cityToSearch && cityToSearch !== 'auto') {
-      const city = cities[cityToSearch];
-      try {
-        const { data } = await api.get('/api/turfs/search', {
-          params: { lat: city.lat, lng: city.lng, radius: 5000 }
-        });
+    setTurfs([]);
 
-        if (data.success) {
-          setTurfs(data.results || []);
+    try {
+      console.log(`🔍 Searching for turfs in: "${searchQuery}"`);
+      
+      // Use backend API which will handle location search via Places API Text Search
+      const { data } = await api.get('/api/turfs/search-by-location', {
+        params: { 
+          location: searchQuery,
+          radius: 5000 
+        }
+      });
+
+      if (data.success) {
+        setTurfs(data.results || []);
+        if (data.results && data.results.length > 0) {
+          console.log(`✅ Found ${data.results.length} turfs in ${searchQuery}`);
+          console.log(`📍 Coordinates: ${data.coordinates?.lat}, ${data.coordinates?.lng}`);
           setShowTurfsModal(true);
         } else {
-          setLocationError(data.message || 'Failed to search turfs');
+          setLocationError(`No sports turfs found in "${searchQuery}". Try a different location or larger city.`);
         }
-      } catch (error) {
-        console.error('Error searching turfs:', error);
-        setLocationError('Failed to fetch nearby turfs');
-      } finally {
-        setLoadingTurfs(false);
+      } else {
+        setLocationError(data.message || 'Failed to search turfs');
       }
-      return;
-    }
-
-    // Auto-detect using geolocation (if no city specified)
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser');
+    } catch (error) {
+      console.error('❌ Error searching turfs:', error);
+      setLocationError('Failed to search location. Please try again.');
+    } finally {
       setLoadingTurfs(false);
-      return;
     }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          const { latitude, longitude } = position.coords;
-          const { data } = await api.get('/api/turfs/search', {
-            params: { lat: latitude, lng: longitude, radius: 5000 }
-          });
-
-          if (data.success) {
-            setTurfs(data.results || []);
-            setShowTurfsModal(true);
-          } else {
-            setLocationError(data.message || 'Failed to search turfs');
-          }
-        } catch (error) {
-          console.error('Error searching turfs:', error);
-          setLocationError('Failed to fetch nearby turfs');
-        } finally {
-          setLoadingTurfs(false);
-        }
-      },
-      (error) => {
-        console.error('Geolocation error:', error);
-        setLocationError('Unable to get your location. Please enable location access.');
-        setLoadingTurfs(false);
-      }
-    );
   };
 
   const handleSearchSubmit = (e) => {
@@ -321,21 +309,8 @@ export default function Dashboard() {
             <p className="text-lg sm:text-xl text-slate-400 font-medium">Ready to play?</p>
           </div>
 
-          {/* City Selector */}
-          <div className="max-w-2xl">
-            <label className="block text-sm font-semibold text-slate-400 mb-2">Select Location</label>
-            <select
-              value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-5 py-3 bg-slate-800/50 backdrop-blur-xl border border-cyan-500/30 rounded-xl text-white focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 transition-all font-medium cursor-pointer"
-            >
-              {Object.entries(cities).map(([key, city]) => (
-                <option key={key} value={key} className="bg-slate-900">
-                  {city.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Active Matches Section */}
+          <ActiveMatches matches={activeMatches} />
 
           {/* Search Bar */}
           <div className="relative max-w-2xl group">
@@ -345,7 +320,7 @@ export default function Dashboard() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Type city name or turf... (e.g., Delhi, Mumbai, Bangalore)"
+                placeholder="Search any location or turf... (e.g., Kolkata, Jaipur, Chennai, Goa)"
                 className="w-full px-6 py-4 pl-14 pr-32 bg-slate-800/50 backdrop-blur-xl border border-cyan-500/30 rounded-2xl text-white placeholder-slate-400 focus:outline-none focus:border-cyan-400 focus:shadow-lg focus:shadow-cyan-500/20 transition-all font-medium"
               />
               <svg className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
